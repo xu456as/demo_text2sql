@@ -18,6 +18,7 @@ class Settings:
     anthropic_timeout_seconds = float(os.getenv("ANTHROPIC_TIMEOUT_SECONDS", "60"))
     log_llm_payloads = os.getenv("LOG_LLM_PAYLOADS", "true").lower() in {"1", "true", "yes", "on"}
     mysql_dsn = os.getenv("MYSQL_DSN", "")
+    frontend_dist = Path(os.getenv("FRONTEND_DIST", root_dir / "backend/static"))
 
 
 @lru_cache
