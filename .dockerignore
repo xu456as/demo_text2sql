@@ -1,0 +1,34 @@
+# Keep the build context small and reproducible. Dependencies are installed
+# fresh inside the image, so host-side artifacts must not leak in.
+
+# Python
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/*.egg-info/
+
+# Node / frontend build artifacts (rebuilt in the image)
+**/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Local runtime state and secrets
+*.db
+.env
+.env.*
+
+# VCS / editor / OS
+.git/
+.gitignore
+.DS_Store
+.vscode/
+.idea/
+
+# Docs and CI (not needed at runtime)
+docs/
+.github/
+
+# The Docker artifacts themselves
+Dockerfile
+.dockerignore

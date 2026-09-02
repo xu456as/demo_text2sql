@@ -1324,6 +1324,124 @@ function TransformationBuilder({
   );
 }
 
+type SpecialistAgent = {
+  id: string;
+  name: string;
+  summary: string;
+  domain: string;
+  status: "Active" | "Beta" | "Idle";
+  requestsHandled: number;
+  accuracy: number;
+  lastActive: string;
+};
+type SpecialistTeam = { team: string; agents: SpecialistAgent[] };
+
+const SPECIALIST_TEAMS: SpecialistTeam[] = [
+  {
+    team: "Data Team Specialists",
+    agents: [
+      { id: "business-a", name: "Business-A agent", summary: "Explores sales and order analytics with natural-language questions.", domain: "Sales Analytics", status: "Active", requestsHandled: 1284, accuracy: 96, lastActive: "2h ago" },
+      { id: "business-b", name: "Business-B agent", summary: "Builds customer segmentation and retention datasets.", domain: "Customer Insight", status: "Active", requestsHandled: 842, accuracy: 94, lastActive: "1d ago" },
+      { id: "business-c", name: "Business-C agent", summary: "Assembles regional and product-level reporting layers.", domain: "Reporting", status: "Beta", requestsHandled: 317, accuracy: 91, lastActive: "3h ago" },
+    ],
+  },
+  {
+    team: "WMT Team Specialists",
+    agents: [
+      { id: "business-d", name: "Business-D agent", summary: "Reconciles warehouse movement and inventory positions.", domain: "Warehouse", status: "Active", requestsHandled: 976, accuracy: 93, lastActive: "5h ago" },
+      { id: "business-e", name: "Business-E agent", summary: "Tracks fulfillment SLAs and shipment exceptions.", domain: "Fulfillment", status: "Active", requestsHandled: 611, accuracy: 92, lastActive: "20m ago" },
+      { id: "business-f", name: "Business-F agent", summary: "Forecasts replenishment demand from historical trends.", domain: "Forecasting", status: "Idle", requestsHandled: 208, accuracy: 88, lastActive: "6d ago" },
+    ],
+  },
+  {
+    team: "IBG Team Specialists",
+    agents: [
+      { id: "business-h", name: "Business-H agent", summary: "Monitors cross-border transaction flows and settlement.", domain: "Payments", status: "Active", requestsHandled: 1043, accuracy: 95, lastActive: "45m ago" },
+      { id: "business-i", name: "Business-I agent", summary: "Screens counterparties against compliance watchlists.", domain: "Compliance", status: "Beta", requestsHandled: 289, accuracy: 90, lastActive: "2d ago" },
+      { id: "business-j", name: "Business-J agent", summary: "Aggregates portfolio exposure across banking books.", domain: "Risk", status: "Active", requestsHandled: 754, accuracy: 93, lastActive: "8h ago" },
+    ],
+  },
+];
+
+function SpecialistAgentCard({
+  agent,
+  open,
+  onToggle,
+}: {
+  agent: SpecialistAgent;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      className={`agent-card${open ? " open" : ""}`}
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-label={`${open ? "Collapse" : "Expand"} ${agent.name}`}
+    >
+      <div className="agent-card-top">
+        <b>{agent.name}</b>
+        <span className={`agent-status ${agent.status.toLowerCase()}`}>
+          {agent.status}
+        </span>
+      </div>
+      {open ? (
+        <div className="agent-overview">
+          <div>
+            <small>Domain</small>
+            <b>{agent.domain}</b>
+          </div>
+          <div>
+            <small>Requests handled</small>
+            <b>{agent.requestsHandled.toLocaleString()}</b>
+          </div>
+          <div>
+            <small>Accuracy</small>
+            <b>{agent.accuracy}%</b>
+          </div>
+          <div>
+            <small>Last active</small>
+            <b>{agent.lastActive}</b>
+          </div>
+        </div>
+      ) : (
+        <p>{agent.summary}</p>
+      )}
+    </button>
+  );
+}
+
+function SpecialistAgents() {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <div className="admin-page">
+      <Title
+        title="Specialist Agents"
+        sub="Each team maintains its own specialist agents. Select a card to reveal its overview."
+      />
+      {SPECIALIST_TEAMS.map((group) => (
+        <div className="panel" key={group.team}>
+          <h3>{group.team}</h3>
+          <div className="agent-grid">
+            {group.agents.map((agent) => (
+              <SpecialistAgentCard
+                key={agent.id}
+                agent={agent}
+                open={openId === agent.id}
+                onToggle={() =>
+                  setOpenId((current) =>
+                    current === agent.id ? null : agent.id,
+                  )
+                }
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TaskCenter({ focusId }: { focusId?: string }) {
   const [tasks, setTasks] = useState<TransformRequest[]>([]),
     [selected, setSelected] = useState<string | undefined>(focusId),
@@ -1799,6 +1917,7 @@ export default function App() {
   const nav =
     role === "business"
       ? [
+          ["agents", "✦", "Specialist Agents"],
           ["chat", "⌁", "Data Chat"],
           ["transform", "⇄", "Data Transformation"],
           ["tasks", "▤", "Task Center"],
@@ -1874,7 +1993,9 @@ export default function App() {
         </div>
       </nav>
       {space ? (
-        section === "chat" ? (
+        section === "agents" ? (
+          <SpecialistAgents />
+        ) : section === "chat" ? (
           <Chat space={space} />
         ) : section === "transform" ? (
           <TransformationBuilder space={space} onCreated={created} />

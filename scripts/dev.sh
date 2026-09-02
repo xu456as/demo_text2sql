@@ -19,7 +19,8 @@ cleanup() {
   kill "${BACKEND_PID:-}" "${FRONTEND_PID:-}" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
-
+VENV_DIR="$ROOT_DIR/backend/.venv"
+source "$VENV_DIR/bin/activate"
 ## TODO: load the .venv python environment if it exists
 (cd "$ROOT_DIR/backend" && python3 -m uvicorn app.main:app --reload --port 8000) &
 BACKEND_PID=$!

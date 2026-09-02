@@ -1,10 +1,12 @@
 from __future__ import annotations
 import json
 from contextlib import asynccontextmanager
+from pathlib import Path
 from uuid import uuid4
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from app.llm import AnthropicSparkSQLProvider, LLMProvider
 from app.metadata import get_metadata_provider
 from app.models import AskRequest, FeedbackRequest, SemanticContext, SpaceUpdate
@@ -184,3 +186,12 @@ def transition_transformation_request(request_id: str, action: str):
 def generate_transformation_sql(body: TransformationSQLGenerateRequest):
     catalog = get_metadata_provider("local").load_catalog({"path": str(settings.metadata_path)})
     return generation_service.generate(body, catalog)
+
+
+# Serve the built frontend (single-image, same-origin hosting). Mounted last so
+# every /api route above takes precedence; the SPA fallback (html=True) then
+# serves index.html for any other path. Skipped when the build is absent (e.g.
+# local dev, where Vite serves the UI on its own port).
+_frontend_dist = Path(settings.frontend_dist)
+if _frontend_dist.is_dir():
+    app.mount("/", StaticFiles(directory=_frontend_dist, html=True), name="frontend")
